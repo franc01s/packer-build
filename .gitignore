@@ -8,3 +8,5 @@ Vagrantfile
 .venv/
 __pycache__/
 *.py[co]
+.idea
+

@@ -12,3 +12,9 @@ autoinstall:
   ssh:
     install-server: true
     allow-pw: yes
+  users:
+  - name: {{ ssh_username }}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    passwd: {{ ssh_password_crypted }}
+    lock_passwd: false
