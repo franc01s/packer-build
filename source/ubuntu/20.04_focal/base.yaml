@@ -175,6 +175,9 @@ builders:
   vm_name: '{{user `vm_name`}}'
   notes: 'Build via Packer'
   convert_to_template: true
+  export:
+    force: true
+    output_directory: '{{user `output_directory`}}'  
 
   guest_os_type: 'centos7_64Guest'
   CPUs: 1
@@ -261,9 +264,14 @@ provisioners:
   - apt-get update
   - apt-get --yes dist-upgrade
   - apt-get clean
+  - cloud-init clean
+  - rm /etc/machine-id
+  - touch /etc/machine-id
+  - rm /etc/cloud/cloud.cfg.d/*
   only:
   - vbox
   - qemu
+  - vsphere-iso
 - <<: *provisioner_shell_options
   inline:
   - dd if=/dev/zero of=/ZEROFILL bs=16M || true
@@ -272,6 +280,7 @@ provisioners:
   only:
   - vbox
   - qemu
+  - vsphere-iso
 #                  _       _     _
 # __   ____ _ _ __(_) __ _| |__ | | ___  ___
 # \ \ / / _` | '__| |/ _` | '_ \| |/ _ \/ __|
@@ -279,7 +288,7 @@ provisioners:
 #   \_/ \__,_|_|  |_|\__,_|_.__/|_|\___||___/
 variables:
   apt_cache_url: http://myserver:3142
-  boot_wait: 1s
+  boot_wait: 3s
   bundle_iso: 'false'
   communicator: ssh
   country: CA
@@ -305,7 +314,8 @@ variables:
   locale: en_CA.UTF-8
   memory: '1024'
   min_vagrant_version: 2.2.14
-  output_directory: 'build/{{ isotime "2006-01-02-15-04-05" }}'
+  #output_directory: 'build/{{ isotime "2006-01-02-15-04-05" }}'
+  output_directory: 'build/latest'
   packer_cache_dir: '{{ env `PACKER_CACHE_DIR` }}'
   qemu_binary: qemu-system-x86_64
   shutdown_timeout: 5m
