@@ -136,7 +136,7 @@ builders:
 #                                                   \__, |\___|_| |_| |_|\__,_|
 #                                                      |_|
 - <<: [*builder_common_options, *communicator_ssh_options, *builder_edge_options]
-  accelerator: hvf
+  accelerator: kvm
   disk_cache: writeback
   disk_compression: false
   disk_discard: ignore
@@ -341,7 +341,7 @@ variables:
   vagrantfile_template: template/ubuntu/20.04_focal/base.vagrant
   version: 0.0.0
   vm_name: base-focal
-  vnc_vrdp_bind_address: 127.0.0.1
+  vnc_vrdp_bind_address: 10.238.224.102
   vnc_vrdp_port_max: '6000'
   vnc_vrdp_port_min: '5900'
   vsphere-server: "its-vcsa-lab"
