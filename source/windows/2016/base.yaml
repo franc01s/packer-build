@@ -6,11 +6,6 @@
 #  \__,_|_| |_|\___|_| |_|\___/|_|  |___/
 _anchors:
 - &builder_common_options
-  boot_command:
-  - '<esc><esc><esc><enter><wait>'
-  - '/casper/vmlinuz root=/dev/sr0 initrd=/casper/initrd autoinstall '
-  - 'ds=nocloud-net;seedfrom=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{ user `userdata_location` }}/ '
-  - '<enter>'
   boot_wait: '{{ user `boot_wait` }}'
 
   communicator: '{{ user `communicator` }}'
@@ -46,96 +41,18 @@ _anchors:
   skip_nat_mapping: false
 
 
-- &communicator_ssh_options
-  ssh_agent_auth: '{{ user `ssh_agent_auth` }}'
-# ssh_bastion_agent_auth: false
-# ssh_bastion_host: (string)
-# ssh_bastion_password: (string)
-# ssh_bastion_port: '22'
-# ssh_bastion_private_key_file: (string)
-# ssh_bastion_username: (string)
-# ssh_ciphers: [ 'aes128-gcm@openssh.com', 'chacha20-poly1305@openssh.com', 'aes128-ctr', 'aes192-ctr', 'aes256-ctr', ]
-  ssh_clear_authorized_keys: '{{ user `ssh_clear_authorized_keys` }}'
-  ssh_disable_agent_forwarding: '{{ user `ssh_disable_agent_forwarding` }}'
-  ssh_file_transfer_method: '{{ user `ssh_file_transfer_method` }}'
-  ssh_handshake_attempts: 500
-# ssh_host: (string)
-  ssh_keep_alive_interval: '{{ user `ssh_keep_alive_interval` }}'
-  ssh_password: '{{ user `ssh_password` }}'
-  ssh_port: '{{ user `ssh_port` }}'
-# ssh_private_key_file: (string)
-# ssh_proxy_host: (string)
-# ssh_proxy_password: (string)
-# ssh_proxy_port: '1080'
-# ssh_proxy_username: (string)
-  ssh_pty: '{{ user `ssh_pty` }}'
-# ssh_read_write_timeout: (string)
-  ssh_timeout: '{{ user `ssh_timeout` }}'
-  ssh_username: '{{ user `ssh_username` }}'
-- &provisioner_shell_options
-  binary: false
-# environment_vars: ([]string)
-  execute_command: echo '{{ user `ssh_password` }}' | {{ .Vars }} sudo -E -S '{{ .Path }}'
-  expect_disconnect: true
-  inline_shebang: /bin/sh -e
-# remote_file: script_nnn.sh
-# remote_folder: /tmp
-# remote_path: /tmp/script_nnn.sh
-  skip_clean: false
-  start_retry_timeout: '{{ user `start_retry_timeout` }}'
-  type: shell
 #  _           _ _     _
 # | |__  _   _(_) | __| | ___ _ __ ___
 # | '_ \| | | | | |/ _` |/ _ \ '__/ __|
 # | |_) | |_| | | | (_| |  __/ |  \__ \
 # |_.__/ \__,_|_|_|\__,_|\___|_|  |___/
 builders:
-#                    _      _               _ _                    _
-#             __   _(_)_ __| |_ _   _  __ _| | |__   _____  __    (_)___  ___
-#             \ \ / / | '__| __| | | |/ _` | | '_ \ / _ \ \/ /____| / __|/ _ \
-#              \ V /| | |  | |_| |_| | (_| | | |_) | (_) >  <_____| \__ \ (_) |
-#               \_/ |_|_|   \__|\__,_|\__,_|_|_.__/ \___/_/\_\    |_|___/\___/
-- <<: [*builder_common_options, *communicator_ssh_options, *builder_edge_options]
-  bundle_iso: '{{ user `bundle_iso` }}'
-# export_opts: ([]string)
-  format: ova
-# guest_additions_interface: sata
-  guest_additions_mode: disable
-# guest_additions_path: VBoxGuestAdditions.iso
-# guest_additions_sha256: (string)
-# guest_additions_url: (string)
-  guest_os_type: '{{ user `guest_os_type` }}'
-  hard_drive_discard: false
-  hard_drive_interface: sata
-  hard_drive_nonrotational: false
-  iso_interface: sata
-  keep_registered: '{{ user `keep_registered` }}'
-  name: vbox
-  post_shutdown_delay: 0s
-  sata_port_count: '1'
-  skip_export: '{{ user `skip_export` }}'
-  type: virtualbox-iso
-  vboxmanage:
-  - - modifyvm
-    - '{{ .Name }}'
-    - '--rtcuseutc'
-    - >-
-      {{ if user `system_clock_in_utc` | eq `true` -}}
-      on
-      {{- else -}}
-      off
-      {{- end }}
-# vboxmanage_post: ([][]string)
-  virtualbox_version_file: '/tmp/.vbox_version'
-  vrdp_bind_address: '{{ user `vnc_vrdp_bind_address` }}'
-  vrdp_port_max: '{{ user `vnc_vrdp_port_max` }}'
-  vrdp_port_min: '{{ user `vnc_vrdp_port_min` }}'
 #                                                    __ _  ___ _ __ ___  _   _
 #                                                   / _` |/ _ \ '_ ` _ \| | | |
 #                                                  | (_| |  __/ | | | | | |_| |
 #                                                   \__, |\___|_| |_| |_|\__,_|
 #                                                      |_|
-- <<: [*builder_common_options, *communicator_ssh_options, *builder_edge_options]
+- <<: [*builder_common_options, *builder_edge_options]
   accelerator: kvm
   disk_cache: writeback
   disk_compression: false
@@ -160,7 +77,7 @@ builders:
 #                                           \ V / | (__ |  __/| | | || |_ |  __/| |
 #                                            \_/   \___| \___||_| |_| \__| \___||_|
 #
-- <<: [*builder_common_options, *communicator_ssh_options]
+- <<: [*builder_common_options]
   name: vsphere-iso
   type: vsphere-iso
   vcenter_server: '{{user `vsphere-server`}}'
@@ -177,9 +94,7 @@ builders:
   convert_to_template: true
   export:
     force: true
-    output_directory: '{{user `output_directory`}}'
-
-  vmx_remove_ethernet_interfaces: true
+    output_directory: '{{user `output_directory`}}'  
 
   guest_os_type: 'centos7_64Guest'
   CPUs: 1
@@ -210,7 +125,6 @@ min_packer_version: 1.6.6
 # | .__/ \___/|___/\__|    | .__/|_|  \___/ \___\___||___/___/\___/|_|  |___/
 # |_|                      |_|
 post-processors: []
-
 #                       _     _
 #  _ __  _ __ _____   _(_)___(_) ___  _ __   ___ _ __ ___
 # | '_ \| '__/ _ \ \ / / / __| |/ _ \| '_ \ / _ \ '__/ __|
@@ -218,28 +132,42 @@ post-processors: []
 # | .__/|_|  \___/ \_/ |_|___/_|\___/|_| |_|\___|_|  |___/
 # |_|
 provisioners:
-- <<: *provisioner_shell_options
-  inline:
-  - apt-get update
-  - apt-get --yes dist-upgrade
-  - apt-get clean
-  - cloud-init clean
-  - rm /etc/machine-id
-  - touch /etc/machine-id
-  - rm /etc/cloud/cloud.cfg.d/*
-  only:
-  - vbox
-  - qemu
-  - vsphere-iso
-- <<: *provisioner_shell_options
-  inline:
-  - dd if=/dev/zero of=/ZEROFILL bs=16M || true
-  - rm /ZEROFILL
-  - sync
-  only:
-  - vbox
-  - qemu
-  - vsphere-iso
+- cookbook_paths:
+  - "{{template_dir}}/cookbooks"
+  guest_os_type: windows
+  run_list:
+  - packer::disable_uac
+  - packer::disable_restore
+  - packer::disable_windows_update
+  - packer::remove_defender
+  - packer::configure_power
+  - packer::disable_screensaver
+  type: chef-solo
+- type: windows-restart
+- cookbook_paths:
+  - "{{template_dir}}/cookbooks"
+  guest_os_type: windows
+  run_list:
+  - packer::vm_tools
+  - packer::features
+  - packer::enable_file_sharing
+  - packer::enable_remote_desktop
+  - packer::ui_tweaks
+  type: chef-solo
+- type: windows-restart
+- cookbook_paths:
+  - "{{template_dir}}/cookbooks"
+  guest_os_type: windows
+  run_list:
+  - packer::cleanup
+  - packer::defrag
+  type: chef-solo
+- elevated_password: vagrant
+  elevated_user: vagrant
+  script: "{{template_dir}}/scripts/cleanup.ps1"
+  type: powershell
+
+
 #                  _       _     _
 # __   ____ _ _ __(_) __ _| |__ | | ___  ___
 # \ \ / / _` | '__| |/ _` | '_ \| |/ _ \/ __|
